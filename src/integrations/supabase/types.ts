@@ -14,7 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          category: Database["public"]["Enums"]["task_category"] | null
+          completed: boolean
+          created_at: string
+          deadline: string | null
+          description: string | null
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["task_category"] | null
+          completed?: boolean
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["task_category"] | null
+          completed?: boolean
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +85,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      task_category:
+        | "work"
+        | "personal"
+        | "urgent"
+        | "health"
+        | "finance"
+        | "education"
+        | "social"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +219,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      task_category: [
+        "work",
+        "personal",
+        "urgent",
+        "health",
+        "finance",
+        "education",
+        "social",
+      ],
+    },
   },
 } as const
