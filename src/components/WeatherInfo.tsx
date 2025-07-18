@@ -84,6 +84,11 @@ export function WeatherInfo({ deadline }: WeatherInfoProps) {
         <Wind className="h-3 w-3" />
         {weather.windSpeed} m/s
       </div>
+      {(weather as any).location && (
+        <span className="text-xs opacity-75">
+          in {(weather as any).location}
+        </span>
+      )}
     </div>
   );
 }

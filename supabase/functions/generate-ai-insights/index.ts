@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { pendingTasks, completedTasks, tasks } = await req.json();
+    const { pendingTasks, completedTasks, tasks, customPrompt } = await req.json();
 
     if (!geminiApiKey) {
       throw new Error('Gemini API key not configured');
@@ -24,7 +24,7 @@ serve(async (req) => {
       `- ${task.title} (${task.category}${task.deadline ? `, due: ${new Date(task.deadline).toLocaleDateString()}` : ''})`
     ).join('\n');
 
-    const prompt = `Generate a brief, motivational productivity insight for a user with ${pendingTasks} pending tasks and ${completedTasks} completed tasks.
+    const prompt = customPrompt || `Generate a brief, motivational productivity insight for a user with ${pendingTasks} pending tasks and ${completedTasks} completed tasks.
 
 Current pending tasks:
 ${taskList || 'No pending tasks'}

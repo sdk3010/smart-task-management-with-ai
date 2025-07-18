@@ -4,10 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Edit2, Trash2, Calendar, Cloud } from "lucide-react";
+import { Edit2, Trash2, Calendar, Cloud, CheckCircle, X } from "lucide-react";
 import { format } from "date-fns";
 import type { Task } from "@/pages/Dashboard";
 import { WeatherInfo } from "./WeatherInfo";
+import { TaskInsights } from "./TaskInsights";
 
 interface TaskListProps {
   tasks: Task[];
@@ -40,16 +41,59 @@ export function TaskList({ tasks, onTaskUpdate, onTaskDelete, onTaskEdit }: Task
   const { toast } = useToast();
 
   const handleToggleComplete = async (task: Task) => {
+    const newStatus = !task.completed;
+    
+    // Show completion notification if marking as complete
+    if (newStatus) {
+      toast({
+        title: "Task completed! 🎉",
+        description: `Mark "${task.title}" as completed?`,
+        action: (
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              onClick={() => updateTaskStatus(task, true)}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircle className="h-3 w-3 mr-1" />
+              Yes
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => updateTaskStatus(task, false)}
+            >
+              <X className="h-3 w-3 mr-1" />
+              No
+            </Button>
+          </div>
+        ),
+        duration: 10000,
+      });
+    } else {
+      // Directly update if marking as incomplete
+      updateTaskStatus(task, false);
+    }
+  };
+
+  const updateTaskStatus = async (task: Task, completed: boolean) => {
     try {
       const { data, error } = await supabase
         .from('tasks')
-        .update({ completed: !task.completed })
+        .update({ completed })
         .eq('id', task.id)
         .select()
         .single();
 
       if (error) throw error;
       onTaskUpdate(data);
+      
+      if (completed) {
+        toast({
+          title: "Task completed successfully!",
+          description: `"${task.title}" has been marked as completed.`,
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error updating task",
@@ -152,11 +196,10 @@ export function TaskList({ tasks, onTaskUpdate, onTaskDelete, onTaskEdit }: Task
               </div>
             </div>
           </CardHeader>
-          {task.deadline && (
-            <CardContent className="pt-0">
-              <WeatherInfo deadline={task.deadline} />
-            </CardContent>
-          )}
+          <CardContent className="pt-0 space-y-3">
+            {task.deadline && <WeatherInfo deadline={task.deadline} />}
+            <TaskInsights task={task} />
+          </CardContent>
         </Card>
       ))}
     </div>

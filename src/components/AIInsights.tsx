@@ -53,7 +53,7 @@ export function AIInsights({ tasks }: AIInsightsProps) {
     if (tasks.length > 0) {
       generateInsights();
     }
-  }, [tasks.length]);
+  }, [tasks]);
 
   const stats = {
     total: tasks.length,

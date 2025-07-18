@@ -20,8 +20,47 @@ serve(async (req) => {
       throw new Error('OpenWeather API key not configured');
     }
 
-    // Get current weather (for demonstration - in a real app you might want forecast data)
-    const response = await fetch(
+    console.log(`Fetching weather for ${city} on deadline: ${deadline}`);
+
+    // Get weather forecast for the specific date if deadline is in the future
+    const deadlineDate = new Date(deadline);
+    const now = new Date();
+    const timeDiff = deadlineDate.getTime() - now.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+    let response;
+    if (daysDiff > 0 && daysDiff <= 5) {
+      // Use 5-day forecast for future dates
+      response = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${openWeatherApiKey}&units=metric`
+      );
+      
+      if (response.ok) {
+        const forecastData = await response.json();
+        // Find the forecast closest to the deadline
+        const targetDate = deadlineDate.toISOString().split('T')[0];
+        const forecast = forecastData.list.find((item: any) => 
+          item.dt_txt.startsWith(targetDate)
+        ) || forecastData.list[0];
+        
+        const weather = {
+          temp: forecast.main.temp,
+          description: forecast.weather[0].description,
+          icon: forecast.weather[0].icon,
+          humidity: forecast.main.humidity,
+          windSpeed: forecast.wind.speed,
+          date: forecast.dt_txt,
+        };
+        
+        console.log('Weather forecast found:', weather);
+        return new Response(JSON.stringify({ weather }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+    
+    // Fallback to current weather
+    response = await fetch(
       `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${openWeatherApiKey}&units=metric`
     );
 
@@ -37,7 +76,11 @@ serve(async (req) => {
       icon: weatherData.weather[0].icon,
       humidity: weatherData.main.humidity,
       windSpeed: weatherData.wind.speed,
+      location: weatherData.name,
+      country: weatherData.sys.country,
     };
+
+    console.log('Current weather found:', weather);
 
     return new Response(JSON.stringify({ weather }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
