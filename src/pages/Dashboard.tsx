@@ -8,6 +8,7 @@ import { TaskList } from "@/components/TaskList";
 import { TaskForm } from "@/components/TaskForm";
 import { TaskFilters } from "@/components/TaskFilters";
 import { AIInsights } from "@/components/AIInsights";
+import { EndOfDayNotification } from "@/components/EndOfDayNotification";
 import { Plus, LogOut, User, Moon, Sun } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -224,6 +225,12 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* End of Day Notification */}
+      <EndOfDayNotification 
+        tasks={tasks} 
+        onTaskUpdate={handleTaskUpdated} 
+      />
     </div>
   );
 }

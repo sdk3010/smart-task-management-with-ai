@@ -18,20 +18,43 @@ export function TaskInsights({ task }: TaskInsightsProps) {
   const generateTaskInsights = async () => {
     setIsLoading(true);
     try {
-      const prompt = `Analyze this task and provide specific insights:
-      Title: ${task.title}
-      Description: ${task.description || 'No description'}
-      Category: ${task.category}
-      Deadline: ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}
-      Status: ${task.completed ? 'Completed' : 'Pending'}
+      const now = new Date();
+      const taskDeadline = task.deadline ? new Date(task.deadline) : null;
+      const isOverdue = taskDeadline && taskDeadline < now && !task.completed;
       
-      Provide:
-      1. Priority assessment based on deadline and category
-      2. Specific tips for completing this task efficiently
-      3. Potential challenges and how to overcome them
-      4. Time management suggestions
+      let prompt;
       
-      Keep response concise (under 100 words) and actionable.`;
+      if (isOverdue) {
+        const daysOverdue = Math.floor((now.getTime() - taskDeadline.getTime()) / (1000 * 60 * 60 * 24));
+        prompt = `⚠️ OVERDUE TASK RECOVERY PLAN ⚠️
+        
+        Task "${task.title}" is ${daysOverdue} day(s) overdue (deadline: ${taskDeadline.toLocaleDateString()})
+        Category: ${task.category}
+        Description: ${task.description || 'No description'}
+        
+        Provide urgent action steps to:
+        1. How to catch up and complete this overdue task quickly
+        2. Specific strategies to prioritize and tackle it today
+        3. Ways to prevent similar delays in future
+        4. Time-efficient completion methods for this category
+        
+        Keep response actionable and under 100 words.`;
+      } else {
+        prompt = `Analyze this task and provide specific insights:
+        Title: ${task.title}
+        Description: ${task.description || 'No description'}
+        Category: ${task.category}
+        Deadline: ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}
+        Status: ${task.completed ? 'Completed' : 'Pending'}
+        
+        Provide:
+        1. Priority assessment based on deadline and category
+        2. Specific tips for completing this task efficiently
+        3. Potential challenges and how to overcome them
+        4. Time management suggestions
+        
+        Keep response concise (under 100 words) and actionable.`;
+      }
 
       const { data, error } = await supabase.functions.invoke('generate-ai-insights', {
         body: { 
