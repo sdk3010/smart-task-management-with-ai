@@ -47,7 +47,7 @@ export function TaskList({ tasks, onTaskUpdate, onTaskDelete, onTaskEdit }: Task
     if (newStatus) {
       toast({
         title: "Task completed! 🎉",
-        description: `Mark "${task.title}" as completed?`,
+        description: `Did you complete "${task.title}"?`,
         action: (
           <div className="flex gap-2">
             <Button 
@@ -68,7 +68,7 @@ export function TaskList({ tasks, onTaskUpdate, onTaskDelete, onTaskEdit }: Task
             </Button>
           </div>
         ),
-        duration: 10000,
+        duration: 15000,
       });
     } else {
       // Directly update if marking as incomplete

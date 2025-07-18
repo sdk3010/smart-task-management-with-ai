@@ -27,17 +27,42 @@ export function WeatherInfo({ deadline }: WeatherInfoProps) {
 
     // Only fetch weather if deadline is within 5 days
     if (daysUntilDeadline >= 0 && daysUntilDeadline <= 5) {
-      fetchWeather();
+      getCurrentLocationAndFetchWeather();
     }
   }, [deadline]);
 
-  const fetchWeather = async () => {
+  const getCurrentLocationAndFetchWeather = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          fetchWeather(latitude, longitude);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          // Fallback to default city if geolocation fails
+          fetchWeather();
+        }
+      );
+    } else {
+      // Fallback if geolocation is not supported
+      fetchWeather();
+    }
+  };
+
+  const fetchWeather = async (lat?: number, lon?: number) => {
     setIsLoading(true);
     setError(null);
     
     try {
+      const body: any = { deadline };
+      if (lat && lon) {
+        body.lat = lat;
+        body.lon = lon;
+      }
+
       const { data, error: fetchError } = await supabase.functions.invoke('get-weather', {
-        body: { deadline }
+        body
       });
 
       if (fetchError) throw fetchError;

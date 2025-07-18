@@ -14,13 +14,22 @@ serve(async (req) => {
   }
 
   try {
-    const { deadline, city = 'London' } = await req.json();
+    const { deadline, city = 'London', lat, lon } = await req.json();
 
     if (!openWeatherApiKey) {
       throw new Error('OpenWeather API key not configured');
     }
 
-    console.log(`Fetching weather for ${city} on deadline: ${deadline}`);
+    let weatherUrl;
+    if (lat && lon) {
+      console.log(`Fetching weather for coordinates ${lat}, ${lon} on deadline: ${deadline}`);
+      weatherUrl = lat && lon 
+        ? `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${openWeatherApiKey}&units=metric`
+        : `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${openWeatherApiKey}&units=metric`;
+    } else {
+      console.log(`Fetching weather for ${city} on deadline: ${deadline}`);
+      weatherUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${openWeatherApiKey}&units=metric`;
+    }
 
     // Get weather forecast for the specific date if deadline is in the future
     const deadlineDate = new Date(deadline);
@@ -31,9 +40,7 @@ serve(async (req) => {
     let response;
     if (daysDiff > 0 && daysDiff <= 5) {
       // Use 5-day forecast for future dates
-      response = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${openWeatherApiKey}&units=metric`
-      );
+      response = await fetch(weatherUrl);
       
       if (response.ok) {
         const forecastData = await response.json();
@@ -60,9 +67,11 @@ serve(async (req) => {
     }
     
     // Fallback to current weather
-    response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${openWeatherApiKey}&units=metric`
-    );
+    const currentWeatherUrl = lat && lon 
+      ? `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${openWeatherApiKey}&units=metric`
+      : `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${openWeatherApiKey}&units=metric`;
+    
+    response = await fetch(currentWeatherUrl);
 
     if (!response.ok) {
       throw new Error(`OpenWeather API error: ${response.statusText}`);
